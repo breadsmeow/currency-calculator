@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yen to Dollar</string>
+    <string name="widget_description">Live yen to dollar rates. Tap to open the calculator.</string>
+    <string name="widget_headline">¥10,000 in US dollars</string>
+    <string name="widget_refresh">Refresh rate</string>
+    <string name="widget_updated">Updated %1$s</string>
+    <string name="widget_not_loaded">Tap ↻ to load live rate</string>
+</resources>

@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Yen to Dollar</title>
+<meta name="description" content="Live Japanese yen to US dollar calculator.">
+<meta name="theme-color" content="#0f1218">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Martian+Mono:wght@300;400;500&display=swap">
+<style>
+/* Layout: one-screen phone tool — display card on top, rate strip, keypad filling the lower half for thumb reach */
+:root {
+  --bg: #0f1218;
+  --surface: #171b24;
+  --raised: #1f2430;
+  --line: #2a3040;
+  --fg: #eef0f5;
+  --muted: #8a92a6;
+  --accent: #d9b56a;      /* koban gold */
+  --accent-ink: #1a1408;
+  --good: #7fc59a;
+  --sans: "Zen Kaku Gothic New", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14px;
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-tap-highlight-color: transparent;
+  user-select: none; -webkit-user-select: none;
+  overscroll-behavior: none;
+}
+.app {
+  max-width: 440px; margin: 0 auto; height: 100%;
+  display: flex; flex-direction: column; gap: 14px; min-height: 560px;
+}
+header { display: flex; align-items: center; justify-content: space-between; padding-top: 4px; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand h1 { font-size: 1.05rem; font-weight: 700; margin: 0; letter-spacing: .01em; }
+.brand span { font-size: .72rem; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; }
+
+.display {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  padding: 18px 20px; display: grid; gap: 4px;
+}
+.row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; min-width: 0; }
+.tag {
+  display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--muted);
+  letter-spacing: .1em; text-transform: uppercase; font-weight: 500;
+}
+.glyph {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 1.05rem; font-weight: 700; color: var(--fg); background: var(--raised);
+  border: 1px solid var(--line);
+}
+.from .glyph { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.amt {
+  font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right;
+  white-space: nowrap; overflow-x: auto; scrollbar-width: none; min-width: 0;
+}
+.amt::-webkit-scrollbar { display: none; }
+.from .amt { font-size: 2.3rem; font-weight: 400; letter-spacing: -.03em; }
+.to .amt { font-size: 1.7rem; font-weight: 300; color: var(--accent); letter-spacing: -.02em; }
+.caret { display: inline-block; width: 2px; height: .9em; background: var(--accent); margin-left: 3px; vertical-align: -0.08em; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.divider { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.swap {
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--raised); color: var(--fg); display: grid; place-items: center; cursor: pointer;
+  transition: transform .25s ease;
+}
+.swap svg { width: 18px; height: 18px; }
+.swap.flip { transform: rotate(180deg); }
+
+.rate {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: .8rem; color: var(--muted); padding: 0 4px; min-width: 0;
+}
+.rate > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rate b { font-family: var(--mono); font-weight: 400; color: var(--fg); font-size: .78rem; }
+.dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); margin-right: 6px; vertical-align: 1px; }
+.dot.live { background: var(--good); }
+.rate button {
+  font: inherit; font-size: .78rem; color: var(--accent); background: none; border: 0; cursor: pointer; padding: 6px 0; flex: none;
+}
+.rate button:disabled { color: var(--muted); }
+
+.quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.quick button {
+  font-family: var(--mono); font-size: .78rem; color: var(--fg); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 9px 0; cursor: pointer;
+}
+.quick button:active { background: var(--raised); }
+
+.pad { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; min-height: 260px; }
+.pad button {
+  font-family: var(--mono); font-size: 1.5rem; font-weight: 300; color: var(--fg);
+  background: var(--surface); border: 0; border-radius: 18px; cursor: pointer;
+  transition: background .12s, transform .08s;
+}
+.pad button:active { background: var(--raised); transform: scale(.97); }
+.pad .fn { color: var(--muted); }
+.pad svg { width: 24px; height: 24px; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note { font-size: .7rem; color: var(--muted); text-align: center; line-height: 1.5; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .caret { animation: none; } .swap, .pad button { transition: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><h1>Yen → Dollar</h1><span>JPY · USD</span></div>
+  </header>
+
+  <section class="display" aria-live="polite">
+    <div class="row from">
+      <div class="tag"><span class="glyph" id="fromGlyph">¥</span><span id="fromCode">JPY</span></div>
+      <div class="amt" id="fromAmt">10,000</div>
+    </div>
+    <div class="divider">
+      <button class="swap" id="swap" aria-label="Swap currencies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>
+      </button>
+    </div>
+    <div class="row to">
+      <div class="tag"><span class="glyph" id="toGlyph">$</span><span id="toCode">USD</span></div>
+      <div class="amt" id="toAmt">63.61</div>
+    </div>
+  </section>
+
+  <div class="rate">
+    <span><i class="dot" id="dot"></i><b id="rateText">$1 = ¥157.20</b> · <span id="status">Saved rate</span></span>
+    <button id="refresh">Refresh</button>
+  </div>
+
+  <div class="quick" id="quick">
+    <button data-v="1000">¥1k</button>
+    <button data-v="5000">¥5k</button>
+    <button data-v="10000">¥10k</button>
+    <button data-v="50000">¥50k</button>
+  </div>
+
+  <div class="pad" id="pad">
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button data-k="." id="dotKey">.</button><button data-k="0">0</button>
+    <button data-k="back" class="fn" aria-label="Delete">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-6 6M11 9l6 6"/></svg>
+    </button>
+  </div>
+  <p class="note">Hold ⌫ to clear. Mid-market rate; banks and card fees will differ.</p>
+</div>
+
+<script>
+(function () {
+  const RATE_URL = "https://open.er-api.com/v6/latest/USD";
+  const FALLBACK_RATE = 157.2;   // used only before the first successful fetch
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  let rate = parseFloat(store.get("jpyRate")) || FALLBACK_RATE;
+  let fetchedAt = parseInt(store.get("jpyFetchedAt"), 10) || 0;
+  let reversed = store.get("jpyReversed") === "1";
+  let input = reversed ? "100" : "10000";
+  let live = false, loading = false;
+
+  const $ = id => document.getElementById(id);
+  const fmt = (n, dec) => n.toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  const when = ms => {
+    const d = new Date(ms), now = new Date();
+    const t = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    return d.toDateString() === now.toDateString() ? t : d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + t;
+  };
+
+  function formatInput(s) {
+    if (!s) return "0";
+    const [i, d] = s.split(".");
+    const int = Number(i || "0").toLocaleString("en-US");
+    return d !== undefined ? int + "." + d : int;
+  }
+
+  function render() {
+    const n = parseFloat(input) || 0;
+    const out = reversed ? n * rate : n / rate;
+    $("fromAmt").innerHTML = formatInput(input) + '<span class="caret"></span>';
+    $("toAmt").textContent = reversed ? fmt(Math.round(out), 0) : fmt(out, 2);
+    $("fromGlyph").textContent = reversed ? "$" : "¥";
+    $("toGlyph").textContent = reversed ? "¥" : "$";
+    $("fromCode").textContent = reversed ? "USD" : "JPY";
+    $("toCode").textContent = reversed ? "JPY" : "USD";
+    $("rateText").textContent = "$1 = ¥" + fmt(rate, 2);
+    $("dot").classList.toggle("live", live);
+    $("status").textContent = loading ? "Updating…"
+      : live ? "Live · " + when(fetchedAt)
+      : fetchedAt ? "Offline · saved " + when(fetchedAt)
+      : "Offline · sample rate";
+    $("refresh").disabled = loading;
+    $("dotKey").style.visibility = reversed ? "visible" : "hidden";
+    const yen = [1000, 5000, 10000, 50000], usd = [10, 50, 100, 500];
+    $("quick").querySelectorAll("button").forEach((b, i) => {
+      b.dataset.v = reversed ? usd[i] : yen[i];
+      b.textContent = reversed ? "$" + usd[i] : "¥" + (yen[i] / 1000) + "k";
+    });
+  }
+
+  async function refresh() {
+    if (loading) return;
+    loading = true; render();
+    try {
+      const res = await fetch(RATE_URL, { cache: "no-store" });
+      const data = await res.json();
+      const jpy = data && data.rates && data.rates.JPY;
+      if (data.result !== "success" || !(jpy > 0)) throw new Error("bad data");
+      rate = jpy; fetchedAt = Date.now(); live = true;
+      store.set("jpyRate", String(rate)); store.set("jpyFetchedAt", String(fetchedAt));
+    } catch (e) {
+      live = false;
+    }
+    loading = false; render();
+  }
+
+  function press(k) {
+    if (k === "back") { input = input.slice(0, -1); }
+    else if (k === ".") { if (reversed && !input.includes(".")) input = (input || "0") + "."; }
+    else {
+      const [, d] = input.split(".");
+      if (d !== undefined && d.length >= 2) return;
+      if (input.replace(".", "").length >= 12) return;
+      input = input === "0" ? k : input + k;
+    }
+    if (navigator.vibrate) { try { navigator.vibrate(6); } catch (e) {} }
+    render();
+  }
+
+  $("pad").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (b) press(b.dataset.k);
+  });
+
+  let holdTimer;
+  const back = document.querySelector('[data-k="back"]');
+  back.addEventListener("pointerdown", () => { holdTimer = setTimeout(() => { input = ""; render(); }, 550); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => back.addEventListener(ev, () => clearTimeout(holdTimer)));
+
+  $("quick").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    input = String(b.dataset.v); render();
+  });
+
+  $("swap").addEventListener("click", () => {
+    const n = parseFloat(input) || 0;
+    const out = reversed ? n * rate : n / rate;
+    reversed = !reversed;
+    input = reversed ? String(Math.round(out * 100) / 100) : String(Math.round(out));
+    if (input === "0") input = "";
+    $("swap").classList.toggle("flip", reversed);
+    store.set("jpyReversed", reversed ? "1" : "0");
+    render();
+  });
+
+  $("refresh").addEventListener("click", refresh);
+
+  document.addEventListener("keydown", e => {
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key === ".") press(".");
+    else if (e.key === "Backspace") press("back");
+  });
+
+  // Refresh when the app comes back to the screen, at most every 10 minutes
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && Date.now() - fetchedAt > 10 * 60 * 1000) refresh();
+  });
+
+  $("swap").classList.toggle("flip", reversed);
+  render();
+  refresh();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
