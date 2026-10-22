@@ -103,7 +103,7 @@ fun CalculatorScreen() {
             if (ok) {
                 rate = RateRepository.rate(context)
                 updatedAt = RateRepository.updatedAt(context)
-                RateWidget.updateAll(context)
+                Fmt.refreshWidgets(context)
             }
             live = ok
             refreshing = false

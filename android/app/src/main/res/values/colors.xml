@@ -3,6 +3,8 @@
     <color name="bg">#0F1218</color>
     <color name="surface">#171B24</color>
     <color name="line">#2A3040</color>
+    <color name="key">#1F2430</color>
+    <color name="raised">#2C3242</color>
     <color name="fg">#EEF0F5</color>
     <color name="muted">#8A92A6</color>
     <color name="gold">#D9B56A</color>

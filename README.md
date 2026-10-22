@@ -19,9 +19,11 @@ Every push that changes `android/` builds the app automatically (see the **Actio
 
 1. On your phone, open the [latest release](https://github.com/breadsmeow/currency-calculator/releases/tag/latest) and tap **YenDollar.apk**.
 2. Open the downloaded file. If Android asks, allow your browser to install unknown apps.
-3. Long-press the home screen → **Widgets** → **Yen to Dollar** → drag the widget onto the screen.
+3. Long-press the home screen → **Widgets** → **Yen to Dollar**, then pick one (or both):
+   - **Yen calculator** (4×4): a full keypad on the home screen. Type an amount and the conversion updates right there. ⇅ switches between yen→dollars and dollars→yen, C clears, and the decimal point works in dollar mode.
+   - **Yen rates** (4×2): ¥1,000 / ¥5,000 / ¥10,000 / ¥50,000 in dollars at a glance.
 
-Tap the widget to open the calculator; tap ↻ to refresh the rate.
+Tap ↻ on either widget to refresh the rate, or tap the top of it to open the full app.
 
 ## Notes
 

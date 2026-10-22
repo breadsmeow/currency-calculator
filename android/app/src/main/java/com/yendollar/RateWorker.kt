@@ -17,7 +17,7 @@ class RateWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
 
     override suspend fun doWork(): Result {
         val ok = RateRepository.refresh(applicationContext)
-        RateWidget.updateAll(applicationContext)
+        Fmt.refreshWidgets(applicationContext)
         return if (ok || runAttemptCount >= 3) Result.success() else Result.retry()
     }
 
